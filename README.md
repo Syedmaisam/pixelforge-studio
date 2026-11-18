@@ -84,7 +84,7 @@ Put these anywhere in a prompt: `[blocked]` (rejected at submit, free), `[overlo
 ## Tests
 
 ```bash
-php artisan test            # 102 tests, about 4 seconds; never calls the real Pixelforge API
+php artisan test            # 107 tests, about 4 seconds; never calls the real Pixelforge API
 composer test               # also runs Pint and PHPStan (level 7)
 composer ci:check           # everything: frontend lint/format, vue-tsc, Pint, PHPStan and the tests
 ```
@@ -92,6 +92,19 @@ composer ci:check           # everything: frontend lint/format, vue-tsc, Pint, P
 The money tests use the worked example above and the examples from the Pixelforge docs, with a saved copy of
 `GET /v1/pricing` in `tests/Fixtures/pricing.json`. Webhook tests send correctly signed requests, including duplicates,
 out-of-order events, a webhook that arrives before our own POST returns, and bad signatures.
+
+## Logging
+
+Every request we make to Pixelforge is written to the Laravel log (`storage/logs/laravel.log`) as
+`Pixelforge API request`, with the method, path, HTTP status, duration and, on errors, Pixelforge's error code:
+
+```text
+local.INFO: Pixelforge API request {"method":"GET","path":"/pricing","status":200,"duration_ms":1061}
+local.WARNING: Pixelforge API request {"method":"GET","path":"/generations/gen_x","status":404,"duration_ms":1184,"error_code":"not_found","retry_after":null}
+```
+
+Successes are `info`, error responses `warning`, and unreachable Pixelforge `error`. Submits also log our
+`idempotency_key` (the generation's UUID). The API key, prompts and response bodies are never logged.
 
 ## Design decisions
 

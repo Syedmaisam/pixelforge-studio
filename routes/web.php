@@ -6,6 +6,9 @@ use App\Http\Controllers\GenerationController;
 use App\Http\Controllers\PixelforgeWebhookController;
 use Illuminate\Support\Facades\Route;
 
+
+use Illuminate\Support\Facades\Artisan;
+
 Route::inertia('/', 'Welcome')->name('home');
 
 // Only "auth", not "verified": reviewers can use the studio without a mail server.
@@ -27,3 +30,13 @@ Route::middleware('auth')->group(function () {
 Route::post('webhooks/pixelforge', PixelforgeWebhookController::class)->name('webhooks.pixelforge');
 
 require __DIR__.'/settings.php';
+
+
+
+Route::get('/run-migrations', function () {
+    Artisan::call('migrate', [
+        '--force' => true, // Required when APP_ENV is set to production
+    ]);
+
+    return 'Migrations completed successfully: ' . Artisan::output();
+});
