@@ -166,3 +166,19 @@ Successes are `info`, error responses `warning`, and unreachable Pixelforge `err
 4. Include `php artisan migrate --force` in the deploy commands.
 5. Set the production key's webhook URL to `https://<app>.laravel.cloud/webhooks/pixelforge` and send a test event (expect `204`).
 6. Create a reviewer account and run `php artisan app:make-admin <email>`.
+
+## Hosting without a scheduler or queue worker (e.g. Plesk)
+
+If your host can't keep `queue:work` and `schedule:run` running, set a long random `CRON_TOKEN` in `.env`
+(for example from `php -r "echo bin2hex(random_bytes(32));"`) and have the hosting panel fetch this URL **every minute**:
+
+```text
+https://<your-domain>/cron/run?token=<CRON_TOKEN>
+```
+
+Each call runs `schedule:run` (so `pixelforge:sync` still runs every minute), then works through the queue for up to
+25 seconds. You can send the token as an `X-Cron-Token` header instead of the query string if your panel allows it.
+Without a valid token, or with `CRON_TOKEN` empty, the URL answers `404`.
+
+Trade-off: a new generation can wait up to a minute before it is sent, and a retry waits for the next call.
+A real queue worker (`php artisan queue:work`) and cron entry (`php artisan schedule:run`) are better when the host allows them.

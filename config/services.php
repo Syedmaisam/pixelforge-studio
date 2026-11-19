@@ -41,4 +41,10 @@ return [
         'webhook_secret' => env('PIXELFORGE_WEBHOOK_SECRET'),
     ],
 
+    // Secret for GET /cron/run, which a hosting panel's scheduled task calls every
+    // minute when it can't run artisan directly. Empty = the route is disabled.
+    'cron' => [
+        'token' => env('CRON_TOKEN'),
+    ],
+
 ];

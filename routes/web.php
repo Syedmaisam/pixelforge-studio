@@ -2,12 +2,10 @@
 
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\CreditController;
+use App\Http\Controllers\CronController;
 use App\Http\Controllers\GenerationController;
 use App\Http\Controllers\PixelforgeWebhookController;
 use Illuminate\Support\Facades\Route;
-
-
-use Illuminate\Support\Facades\Artisan;
 
 Route::inertia('/', 'Welcome')->name('home');
 
@@ -29,14 +27,7 @@ Route::middleware('auth')->group(function () {
 // Called by Pixelforge, not by a browser: no auth, and CSRF is disabled for it in bootstrap/app.php.
 Route::post('webhooks/pixelforge', PixelforgeWebhookController::class)->name('webhooks.pixelforge');
 
+// Called by the hosting panel's scheduled task once a minute; protected by CRON_TOKEN.
+Route::get('cron/run', CronController::class)->middleware('throttle:10,1')->name('cron.run');
+
 require __DIR__.'/settings.php';
-
-
-
-Route::get('/run-migrations', function () {
-    Artisan::call('migrate', [
-        '--force' => true, // Required when APP_ENV is set to production
-    ]);
-
-    return 'Migrations completed successfully: ' . Artisan::output();
-});

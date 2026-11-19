@@ -29,6 +29,9 @@ export default defineConfig({
         }),
         wayfinder({
             formVariants: true,
+            // Servers where plain `php` is an old version (e.g. Plesk) can point
+            // this at PHP 8.3+: PHP_BINARY=/opt/plesk/php/8.3/bin/php npm run build
+            command: `${process.env.PHP_BINARY ?? 'php'} artisan wayfinder:generate`,
         }),
     ]),
     server: {
